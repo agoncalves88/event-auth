@@ -1,4 +1,4 @@
-package main
+package database
 
 import (
 	"fmt"
@@ -9,8 +9,8 @@ import (
 	"gorm.io/gorm"
 )
 
-func GetDatabase() *gorm.DB {
-	databaseurl := "sqlserver://sa:zaq1ZAQ!@localhost:1433?database=EventDB"
+func GetDatabase(connectionString string) *gorm.DB {
+	databaseurl := connectionString
 
 	connection, err := gorm.Open(sqlserver.Open(databaseurl), &gorm.Config{})
 	if err != nil {
@@ -33,8 +33,8 @@ func CloseDatabase(connection *gorm.DB) {
 	sqldb.Close()
 }
 
-func InitialMigration() {
-	connection := GetDatabase()
+func InitialMigration(connectionString string) {
+	connection := GetDatabase(connectionString)
 	defer CloseDatabase(connection)
 	connection.AutoMigrate(auth.User{})
 }

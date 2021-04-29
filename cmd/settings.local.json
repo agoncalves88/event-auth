@@ -1,0 +1,4 @@
+{
+    "ConnectionString": "sqlserver://sa:zaq1ZAQ!@localhost:1433?database=EventDB",
+    "Port": "3333"
+}

@@ -2,24 +2,31 @@ package main
 
 import (
 	"encoding/json"
+	"flag"
 	"log"
 	"net/http"
 
 	auth "github.com/agoncalves88/event-auth"
+	configuration "github.com/agoncalves88/event-auth/internal/configuration"
+	database "github.com/agoncalves88/event-auth/internal/database"
 	"github.com/gin-gonic/gin"
 )
 
+var config configuration.Configuration
+
 func main() {
-	InitialMigration()
+	env := flag.String("env", "", "")
+	flag.Parse()
 	r := gin.Default()
 	//r.Use(gzip.Gzip(gzip.BestSpeed))
-
+	config = configuration.GetConfig(*env)
+	database.InitialMigration(config.ConnectionString)
 	oauth := r.Group("/OAuth")
 	{
 		oauth.POST("/SignIn", SignIn)
 		oauth.POST("/SignUp", SignUp)
 	}
-	r.Run(":3333")
+	r.Run(":" + config.Port)
 }
 
 func TestAuth(c *gin.Context) {
@@ -27,8 +34,8 @@ func TestAuth(c *gin.Context) {
 }
 
 func SignUp(c *gin.Context) {
-	connection := GetDatabase()
-	defer CloseDatabase(connection)
+	connection := database.GetDatabase(config.ConnectionString)
+	defer database.CloseDatabase(connection)
 	c.Request.Header.Set("Content-Type", "application/json")
 
 	var user auth.User
@@ -60,9 +67,9 @@ func SignUp(c *gin.Context) {
 }
 
 func SignIn(c *gin.Context) {
-	connection := GetDatabase()
+	connection := database.GetDatabase(config.ConnectionString)
 	c.Request.Header.Set("Content-Type", "application/json")
-	defer CloseDatabase(connection)
+	defer database.CloseDatabase(connection)
 
 	var authDetails auth.Authentication
 
